@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask · Skill 设计与实现说明</title>
+    <style>
+        :root {
+            --parchment: #f5f4ed;
+            --ivory: #faf9f5;
+            --brand: #1B365D;
+            --brand-light: #E4ECF5;
+            --near-black: #141413;
+            --dark-warm: #3d3d3a;
+            --olive: #504e49;
+            --stone: #6b6a64;
+            --border: #e8e6dc;
+            --border-soft: #e5e3d8;
+            --serif: "TsangerJinKai02", "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", "STSong", Georgia, serif;
+            --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            --mono: "JetBrains Mono", "SF Mono", Consolas, "TsangerJinKai02", monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--parchment);
+            color: var(--near-black);
+            font-family: var(--sans);
+            line-height: 1.65;
+        }
+
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 56px 40px 80px;
+        }
+
+        .cover {
+            padding: 28px 0 36px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 36px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 4px 10px;
+            margin-bottom: 18px;
+            border-radius: 4px;
+            background: var(--brand-light);
+            color: var(--brand);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: var(--serif);
+            font-weight: 500;
+            color: var(--near-black);
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 38px;
+            line-height: 1.15;
+            letter-spacing: 0.08em;
+        }
+
+        .subtitle {
+            margin-top: 14px;
+            max-width: 760px;
+            color: var(--dark-warm);
+            font-size: 17px;
+        }
+
+        .meta {
+            margin-top: 22px;
+            color: var(--stone);
+            font-size: 14px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin: 28px 0 40px;
+        }
+
+        .card {
+            background: var(--ivory);
+            border: 0.5px solid var(--border);
+            border-radius: 10px;
+            padding: 18px 20px;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: var(--stone);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-family: var(--serif);
+            font-size: 24px;
+            line-height: 1.2;
+            color: var(--brand);
+        }
+
+        .claim {
+            background: var(--ivory);
+            border-left: 3px solid var(--brand);
+            border-radius: 6px;
+            padding: 18px 20px;
+            margin: 24px 0 32px;
+            color: var(--dark-warm);
+        }
+
+        .section {
+            margin-top: 34px;
+        }
+
+        .section-title {
+            font-size: 19px;
+            line-height: 1.25;
+            border-left: 3px solid var(--brand);
+            padding-left: 10px;
+            margin-bottom: 14px;
+        }
+
+        p {
+            margin: 0 0 14px;
+            color: var(--dark-warm);
+            font-size: 15px;
+        }
+
+        ul,
+        ol {
+            margin: 10px 0 16px 22px;
+            padding: 0;
+            color: var(--dark-warm);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .subsection-title {
+            margin: 18px 0 10px;
+            font-size: 15px;
+            color: var(--near-black);
+            font-weight: 600;
+        }
+
+        .code,
+        code {
+            font-family: var(--mono);
+            font-size: 13px;
+        }
+
+        pre {
+            margin: 12px 0 18px;
+            padding: 14px 16px;
+            overflow-x: auto;
+            border-radius: 8px;
+            background: #f0eee5;
+            border: 0.5px solid var(--border);
+            color: var(--near-black);
+            line-height: 1.55;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0 18px;
+            background: var(--ivory);
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 0.5px solid var(--border-soft);
+            vertical-align: top;
+            text-align: left;
+            font-size: 14px;
+            color: var(--dark-warm);
+        }
+
+        th {
+            color: var(--near-black);
+            font-weight: 600;
+            background: #f7f5ef;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .footer-note {
+            margin-top: 42px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+            color: var(--stone);
+            font-size: 13px;
+        }
+
+        @media (max-width: 820px) {
+            .page {
+                padding: 32px 20px 56px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="cover">
+            <div class="eyebrow">Skill Design Note</div>
+            <h1>Ask · Skill 设计与实现说明</h1>
+            <p class="subtitle">
+                这是一份针对 <span class="code">ask</span> 的设计与实现说明，目标是解释它为什么存在、解决什么问题、如何组织调用链，以及当前实现的扩展边界与使用约束。
+            </p>
+            <div class="meta">文档类型：Long Doc · 语言：中文 · 风格：kami editorial HTML</div>
+        </header>
+
+        <section class="summary-grid">
+            <article class="card">
+                <div class="metric-label">核心目标</div>
+                <div class="metric-value">统一本地顾问入口</div>
+            </article>
+            <article class="card">
+                <div class="metric-label">支持 Provider</div>
+                <div class="metric-value">Claude / Gemini / Codex</div>
+            </article>
+            <article class="card">
+                <div class="metric-label">产物形式</div>
+                <div class="metric-value">结构化 Artifact</div>
+            </article>
+        </section>
+
+        <section class="claim">
+            <p>
+                <strong>结论先行：</strong><span class="code">ask</span> 不是一个“大而全”的代理框架，而是一个很薄的本地顾问调用层。
+                它把“选 provider、拼角色 prompt、执行本地 CLI、沉淀 artifact”这四步标准化，目的是让使用者能以更低心智成本复用外部模型视角。
+            </p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">1. 设计目标</h2>
+            <p>
+                <span class="code">ask</span> 的目标不是替代主工作流，而是补一个稳定的“第二视角”入口。
+                当使用者已经在当前仓库内进行分析、排障或实现时，常常还需要一轮额外判断，例如代码 review、风险评估、架构取舍或 bug 根因假设。
+            </p>
+            <p>因此，这个 skill 要满足三个设计目标：</p>
+            <ol>
+                <li>本地执行。直接复用本机已经安装的 <span class="code">claude</span>、<span class="code">gemini</span>、<span class="code">codex</span> CLI。</li>
+                <li>入口统一。无论 provider 是谁，用户都通过同一脚本入口发起请求。</li>
+                <li>结果可追溯。每次调用都落一个 markdown artifact，避免“问完即失忆”。</li>
+            </ol>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">2. 适用场景与非目标</h2>
+
+            <h3 class="subsection-title">2.1 适用场景</h3>
+            <ul>
+                <li>对当前改动做一轮外部 code review。</li>
+                <li>对某个 bug 的根因给出第二视角分析。</li>
+                <li>在多个实现方案之间做轻量架构判断。</li>
+                <li>基于角色 prompt，让顾问从 reviewer、architect、debugger 等角度回答。</li>
+            </ul>
+
+            <h3 class="subsection-title">2.2 非目标</h3>
+            <ul>
+                <li>不负责管理多轮复杂会话状态。</li>
+                <li>不替代主 agent 的仓库读写流程。</li>
+                <li>不负责远端 provider 路由，也不在本地 binary 缺失时静默降级。</li>
+                <li><span class="code">codex</span> provider 当前也不作为“直接改代码”入口，而是只读顾问入口。</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">3. 目录结构</h2>
+            <pre><code>ask/
+├── SKILL.md
+├── prompts/
+│   ├── architect.md
+│   ├── code-reviewer.md
+│   └── debugger.md
+└── scripts/
+    └── ask.js
+</code></pre>
+            <p>
+                其中 <span class="code">SKILL.md</span> 负责定义 skill 的触发语义和使用说明；
+                <span class="code">prompts/</span> 负责角色化 prompt；
+                <span class="code">scripts/ask.js</span> 负责所有执行逻辑。
+            </p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">4. 执行链路</h2>
+            <p>整个调用流程可以压缩成一条四段链路：</p>
+            <pre><code>用户输入
+    ↓
+解析 provider / prompt / --agent-prompt
+    ↓
+调用本地 CLI（claude / gemini / codex）
+    ↓
+写入 .artifacts/ask/*.md
+</code></pre>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>阶段</th>
+                        <th>职责</th>
+                        <th>对应实现</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>参数解析</td>
+                        <td>识别 provider、prompt、角色 prompt 参数</td>
+                        <td><span class="code">parseArgs()</span></td>
+                    </tr>
+                    <tr>
+                        <td>环境校验</td>
+                        <td>确认本地 binary 存在</td>
+                        <td><span class="code">ensureBinary()</span></td>
+                    </tr>
+                    <tr>
+                        <td>角色拼接</td>
+                        <td>读取 <span class="code">prompts/&lt;role&gt;.md</span> 并拼到最终 prompt 前</td>
+                        <td><span class="code">readAgentPrompt()</span></td>
+                    </tr>
+                    <tr>
+                        <td>Provider 适配</td>
+                        <td>为不同 CLI 生成不同参数</td>
+                        <td><span class="code">buildLaunchArgs()</span></td>
+                    </tr>
+                    <tr>
+                        <td>产物沉淀</td>
+                        <td>写入 markdown artifact</td>
+                        <td><span class="code">writeArtifact()</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">5. Provider 适配策略</h2>
+            <p>
+                这个 skill 的核心不是“调用模型”本身，而是做一层很薄的 provider 适配。
+                当前适配表如下：
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>执行命令</th>
+                        <th>设计意图</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="code">claude</span></td>
+                        <td><span class="code">claude -p -- "&lt;prompt&gt;"</span></td>
+                        <td>走 Claude CLI 的非交互 prompt 模式。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="code">gemini</span></td>
+                        <td><span class="code">gemini -p "&lt;prompt&gt;"</span></td>
+                        <td>保持与 Gemini CLI 的最小参数集兼容。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="code">codex</span></td>
+                        <td><span class="code">codex exec --skip-git-repo-check --sandbox read-only "&lt;prompt&gt;"</span></td>
+                        <td>限定为只读顾问路径，避免把 skill 演变成直接改工作树的入口。</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>
+                这里最重要的判断是：<span class="code">codex</span> 虽然可以非交互执行，但当前 skill 只把它定位成“问答 / review / 分析”顾问。
+                这能把使用边界收紧，让脚本行为可预测，也能降低误触写操作的风险。
+            </p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">6. 角色 Prompt 机制</h2>
+            <p>
+                <span class="code">ask</span> 支持通过 <span class="code">--agent-prompt</span> 指定角色文件。
+                角色文件本质是一个前置上下文块，会被拼接到用户 prompt 前面。
+            </p>
+
+            <pre><code>role prompt
+
+user prompt</code></pre>
+
+            <p>当前内置了三类角色：</p>
+            <ul>
+                <li><span class="code">code-reviewer</span>：偏 correctness、regression、readability。</li>
+                <li><span class="code">architect</span>：偏边界、依赖方向、扩展性与 trade-off。</li>
+                <li><span class="code">debugger</span>：偏可验证假设、状态差异、最小验证路径。</li>
+            </ul>
+
+            <p>
+                这个设计的好处是：脚本本身不必硬编码很多“回答模式”，而是把变化点下放到 prompt 文件。
+                新增角色时，只需要补一个新的 <span class="code">.md</span> 文件，而不需要改脚本逻辑。
+            </p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">7. Artifact 设计</h2>
+            <p>
+                Artifact 是这个 skill 的核心价值之一。它确保每次咨询不是一次性输出，而是一个可复盘、可转发、可对照的记录。
+            </p>
+
+            <p>当前 artifact 固定写入：</p>
+            <pre><code>.artifacts/ask/&lt;provider&gt;-&lt;slug&gt;-&lt;timestamp&gt;.md</code></pre>
+
+            <p>文件内容包括：</p>
+            <ol>
+                <li>Provider</li>
+                <li>Exit code</li>
+                <li>Created at</li>
+                <li>Original task</li>
+                <li>Final prompt</li>
+                <li>Raw output</li>
+                <li>Concise summary</li>
+                <li>Action items</li>
+            </ol>
+
+            <p>
+                这种结构的优势在于，后续无论是人还是脚本，都能快速判断这次调用是否成功、实际发了什么 prompt、原始响应是什么，以及下一步是否需要继续落地。
+            </p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">8. 错误处理与边界控制</h2>
+            <p>当前脚本采取的是“早失败、明报错”的策略：</p>
+            <ul>
+                <li>provider 不合法，直接报 usage error。</li>
+                <li>prompt 缺失，直接报错。</li>
+                <li>本地 binary 不存在，直接提示先用 <span class="code">--version</span> 验证安装。</li>
+                <li>角色文件不存在或为空，直接中止，而不是静默忽略。</li>
+            </ul>
+
+            <p>
+                这里的设计原则很简单：对一个顾问型脚本来说，最糟糕的情况不是失败，而是“看起来成功，实际上发错了 prompt 或用了错误 provider”。
+                因此，它宁可早失败，也不做隐式兜底。
+            </p>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">9. 当前实现的扩展点</h2>
+            <p><span class="code">ask</span> 现在已经能满足基础使用，但还有几个自然扩展点：</p>
+            <ul>
+                <li>为 <span class="code">codex</span> 增加可选的 <span class="code">--model</span>、<span class="code">--search</span>、<span class="code">--output-last-message</span> 透传。</li>
+                <li>增加一个更顺手的仓库包装命令，例如 <span class="code">Scripts/ask</span>。</li>
+                <li>支持更细粒度的 artifact summary 生成，而不是固定成功模板。</li>
+                <li>为常见工作流补更多角色 prompt，例如 <span class="code">ios-reviewer</span>、<span class="code">test-engineer</span>。</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">10. 使用示例</h2>
+            <pre><code># 直接问 Claude
+node ask/scripts/ask.js claude "请 review 当前改动"
+
+# 问 Gemini
+node ask/scripts/ask.js gemini "分析这个 bug 根因"
+
+# 问 Codex
+node ask/scripts/ask.js codex "请 review 当前实现风险"
+
+# 带角色 prompt
+node ask/scripts/ask.js codex --agent-prompt code-reviewer "请 review 当前重构"</code></pre>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">11. 总结</h2>
+            <p>
+                <span class="code">ask</span> 的价值不在于“封装了多少能力”，而在于它把一个高频但分散的动作标准化了：
+                使用者不再需要临时记忆不同 provider 的调用命令、角色 prompt 如何拼、结果该如何归档。
+            </p>
+            <p>
+                它是一个薄层工具，但正因为足够薄，才更容易保持稳定、易查、易扩展。
+                对于希望在日常开发中持续使用外部模型做二次确认的人来说，这种克制的实现反而更有长期价值。
+            </p>
+        </section>
+
+        <div class="footer-note">
+            说明：本文档依据当前仓库中的 <span class="code">ask/</span> 实现撰写，重点描述设计意图与当前真实代码路径，不包含假设性的远期框架改造。
+        </div>
+    </main>
+</body>
+</html>
