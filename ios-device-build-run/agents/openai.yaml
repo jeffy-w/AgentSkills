@@ -1,0 +1,4 @@
+interface:
+  display_name: "iOS Device Build Run"
+  short_description: "Run iOS apps on real devices"
+  default_prompt: "Build and run this iOS app on a real device, then show me the relevant logs."
